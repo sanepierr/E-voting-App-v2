@@ -161,7 +161,7 @@ class PollCreateSerializer(serializers.Serializer):
             raise serializers.ValidationError({"end_date": "End date must be after start date."})
         invalid_positions = set(data["position_ids"]) - set(
             Position.objects.filter(
-                pk__in=data["position_ids"]
+                pk__in=data["position_ids"], is_active=True
             ).values_list("pk", flat=True)
         )
         if invalid_positions:
