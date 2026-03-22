@@ -77,7 +77,7 @@ class VoterRegistrationSerializer(serializers.Serializer):
         return value
 
     def validate_station_id(self, value):
-        if not VotingStation.objects.filter(pk=value).exists():
+        if not VotingStation.objects.filter(pk=value, is_active=True).exists():
             raise serializers.ValidationError("Invalid or inactive voting station.")
         return value
 
