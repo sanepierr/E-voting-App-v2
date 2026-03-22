@@ -91,13 +91,15 @@ class AdminCreateSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=150)
     full_name = serializers.CharField(max_length=200)
     email = serializers.EmailField()
-    role = serializers.ChoiceField(choices=[
-        User.Role.SUPER_ADMIN,
-        User.Role.ELECTION_OFFICER,
-        User.Role.STATION_MANAGER,
-        User.Role.AUDITOR,
-        User.Role.VOTER,
-    ])
+    # Only staff/admin roles; voters are created via registration, not this endpoint.
+    role = serializers.ChoiceField(
+        choices=[
+            User.Role.SUPER_ADMIN,
+            User.Role.ELECTION_OFFICER,
+            User.Role.STATION_MANAGER,
+            User.Role.AUDITOR,
+        ]
+    )
     password = serializers.CharField(min_length=6, write_only=True)
 
     def validate_username(self, value):
