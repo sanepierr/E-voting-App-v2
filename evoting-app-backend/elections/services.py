@@ -1,7 +1,16 @@
 from django.db import transaction
+from django.utils import timezone
 
 from audit.services import AuditService
 from elections.models import Candidate, Poll, PollPosition, Position, VotingStation
+
+
+def _date_years_before(d, years):
+    """Calendar date `years` before `d` (Feb 29 -> Feb 28). Matches typical age cutoffs."""
+    try:
+        return d.replace(year=d.year - years)
+    except ValueError:
+        return d.replace(month=2, day=28, year=d.year - years)
 
 
 class CandidateService:
@@ -47,12 +56,35 @@ class CandidateService:
             qs = qs.filter(party__icontains=party)
         if education := query_params.get("education"):
             qs = qs.filter(education=education)
-        if min_age := query_params.get("min_age"):
-            qs = [c for c in qs if c.age >= int(min_age)]
-            return qs
-        if max_age := query_params.get("max_age"):
-            qs = [c for c in qs if c.age <= int(max_age)]
-            return qs
+
+        today = timezone.now().date()
+        min_age = None
+        max_age = None
+        if query_params.get("min_age") is not None:
+            try:
+                v = int(query_params.get("min_age"))
+                if v >= 0:
+                    min_age = v
+            except (TypeError, ValueError):
+                pass
+        if query_params.get("max_age") is not None:
+            try:
+                v = int(query_params.get("max_age"))
+                if v >= 0:
+                    max_age = v
+            except (TypeError, ValueError):
+                pass
+
+        if min_age is not None and max_age is not None and min_age > max_age:
+            return qs.none()
+
+        # Align with Candidate.age: age >= min_age ⟺ DOB on/before (today − min_age years);
+        # age <= max_age ⟺ DOB on/after (today − max_age years).
+        if min_age is not None:
+            qs = qs.filter(date_of_birth__lte=_date_years_before(today, min_age))
+        if max_age is not None:
+            qs = qs.filter(date_of_birth__gte=_date_years_before(today, max_age))
+
         return qs
 
 
