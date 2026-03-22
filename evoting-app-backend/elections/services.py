@@ -196,8 +196,8 @@ class PollService:
                 )
                 if not has_candidates:
                     raise ValueError("Cannot open - no candidates assigned.")
-            poll.status = Poll.Status.OPEN
             log_action = "OPEN_POLL" if poll.status == Poll.Status.DRAFT else "REOPEN_POLL"
+            poll.status = Poll.Status.OPEN
         elif action == "close":
             if poll.status != Poll.Status.OPEN:
                 raise ValueError("Only open polls can be closed.")
