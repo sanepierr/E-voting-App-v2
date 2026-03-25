@@ -2,3 +2,19 @@
 __pycache__/
 *.pyc
 *.pyo
+
+# Frontend (Next.js)
+.next/
+node_modules/
+
+# Backend (local SQLite)
+*.sqlite3
+db.sqlite3
+evoting-app-backend/db.sqlite3
+
+# Env files
+.env
+.env.*
+
+# OS/editor noise
+.DS_Store
